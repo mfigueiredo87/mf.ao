@@ -1,0 +1,79 @@
+<?php
+ 
+class Login extends Conecta{
+    private $username;
+    private $senha;
+    
+    public function setUsername($username){
+        $this->username=$username;
+    }
+      public function setSenha($senha){
+        $this->senha=$senha;
+    }
+    public function getUsername(){
+        return $this->username;
+    }
+    public function getSenha(){
+        return $this->senha;
+    }
+            
+    function logar(){
+        $pdo= parent::getDB();
+        $logar=$pdo->prepare("SELECT *FROM login WHERE username = ? AND senha = ?");
+        $logar->bindValue(1,$this->getUsername());
+        $logar->bindValue(2,$this->getSenha());
+        $logar->execute();
+        
+        $dados=$logar->fetch(PDO::FETCH_ASSOC);
+        $_SESSION['id_user']=$dados['id'];
+        $_SESSION['nome']= $dados['nome_utilizador'];
+        $_SESSION['perfil']= $dados['perfil'];
+        $perfil=$dados['perfil'];
+        $idUsuario=$dados['id'];
+        $utilizador=$dados['nome_utilizador'];
+        
+               
+        if($logar->rowCount() == 1):
+            //verificando os perfis
+        if($_SESSION["perfil"]=="administrador"){
+             $_SESSION['logado_admin']=true;
+            header("location:home.php?pg=Home_Administrador");
+        }elseif ($_SESSION["perfil"]=="secretaria"){
+             $_SESSION['logado_secretaria']=true;
+        header("location:secretaria.php?pg=Home_Secretaria");
+        }elseif ($_SESSION["perfil"]=="docente"){
+             $_SESSION['logado_docente']=true;
+        header("location:professores.php?pg=Home_Docentes");
+        }elseif ($_SESSION["perfil"]=="direccao"){
+             $_SESSION['logado_direccao']=true;
+        header("location:direccao.php?pg=Home_Direccao");
+        }elseif ($_SESSION["perfil"]=="academica"){
+             $_SESSION['logado_academica']=true;
+        header("location:home_academica.php?pg=Home_Academica");
+        }elseif ($_SESSION["perfil"]=="contabilidade"){
+             $_SESSION['logado_contabilidade']=true;
+        header("location:contabilidade.php?pg=Home_Contabilidade");
+        }else{
+            print"<script>
+                alert('Não tem registo válido. Entre em contacto com o Administrador')
+                location.href='index.php?pg=login';
+                </script>";
+        }
+              $_SESSION['logado']=true;
+            return true;
+        else:
+            return false;
+        endif;
+    }
+    
+    public static function sair(){
+        if(isset($_SESSION['logado'])):
+            unset($_SESSION['logado']);
+            session_destroy();
+             print "<script>
+        alert('Sessão terminada com sucesso. Obrigado e volte sempre!')
+        location.href='index.php';
+            </script>";
+        endif;
+    }
+}
